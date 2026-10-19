@@ -42,6 +42,11 @@ class SiteTests(unittest.TestCase):
   self.page.locator('#night-slider').focus();self.page.keyboard.press('Home');self.assertEqual(self.state(),'CALIBRATING')
   self.page.locator('[data-scenario=steady]').click();self.assertEqual(self.state(),'NORMAL')
   self.page.screenshot(path=str(OUT/'mobile-full.png'),full_page=True)
+ def test_narrow_mobile_has_no_decorative_overflow(self):
+  for width in [320,360]:
+   self.page.set_viewport_size({'width':width,'height':900})
+   self.page.reload(wait_until='networkidle')
+   self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'Overflow at {width}px')
  def test_core_information_survives_without_javascript(self):
   context=self.browser.new_context(java_script_enabled=False,viewport={'width':390,'height':844})
   page=context.new_page();page.goto(URL,wait_until='networkidle')

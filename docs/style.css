@@ -217,6 +217,7 @@ em {
   line-height: 1.6;
 }
 .hero-art {
+  overflow: clip;
   position: relative;
   min-height: 530px;
   display: flex;
