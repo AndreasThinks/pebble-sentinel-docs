@@ -1,0 +1,35 @@
+name: Explainer acceptance
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: astral-sh/setup-uv@v6
+      - name: Nightly explanation rules
+        run: node --test tests/model.test.mjs
+      - name: Browser dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements-dev.txt
+          .venv/bin/playwright install chromium --with-deps
+      - name: Desktop, mobile and interaction acceptance
+        run: |
+          mkdir -p proof-artifacts
+          python3 -m http.server 8875 --bind 127.0.0.1 --directory docs > proof-artifacts/server.log 2>&1 &
+          curl --retry 10 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:8875/ > /dev/null
+          .venv/bin/python tests/browser_test.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-proof
+          path: proof-artifacts/
+          retention-days: 7
